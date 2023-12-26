@@ -7,7 +7,7 @@ import addClasses from 'rehype-add-classes'
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://uses.craftz.dog/',
+  site: 'https://shutendohg.github.io',
   integrations: [sitemap(), react(), image(), tailwind()],
   markdown: {
     shikiConfig: {
