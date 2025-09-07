@@ -15,11 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # ルート直下をビルドするので path は指定しない
       - uses: withastro/action@v4
-        with:
-          # ← サブディレクトリの場所を必ず指定
-          path: cvfolio
-          # lockfile から npm/pnpm/yarn/bun を自動判定（必要なら packageManager を固定可）
+        # （lockfile から npm / pnpm / yarn / bun を自動判定）
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
