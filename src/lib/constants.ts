@@ -1,6 +1,6 @@
 import type { z } from 'astro/zod';
 import MetaDefaultImage from '@/assets/images/meta-default.jpg';
-import avatar from '@/assets/images/avatar.jpeg';
+import avatar from '@/assets/images/haruno.png';
 import type { seoSchemaWithoutImage } from '@/content.config';
 import astroConfig from 'astro.config.mjs';
 
@@ -24,18 +24,18 @@ type DefaultConfigurationType = {
 }
 
 export const DEFAULT_CONFIGURATION: DefaultConfigurationType = {
-  baseUrl: astroConfig.site || 'https://getcvfolio.com',
+  baseUrl: astroConfig.site || 'https://shutendohg.github.io/',
   author: {
     avatar,
-    name: 'Javier Diaz Chamorro',
-    headline: 'Engineering and Design',
-    username: 'coderdiaz',
-    location: 'Mexico City',
-    pronouns: 'He/Him',
+    name: 'Horohira',
+    headline: 'Software Enginner',
+    username: 'shutendohg',
+    location: 'Kawasaki, Japan',
+    pronouns: 'Icon by https://x.com/cone_huraku',
   },
   seo: {
-    title: 'CV Folio — An Astro template inspired on Read.cv',
-    description: 'Clean and aesthetic portfolio website for developers and designers',
+    title: 'shutendohg page',
+    description: 'Simple portfolio of shutendohg',
     type: 'website',
     image: MetaDefaultImage,
     twitter: {

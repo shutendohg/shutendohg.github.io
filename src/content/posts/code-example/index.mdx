@@ -1,6 +1,6 @@
 ---
-title: Example Post with Code
-date: 2021-01-01
+title: Test posts
+date: 2025-09-15
 image: ./meta.jpg
 seo:
   title: Example Post with Code
@@ -9,18 +9,27 @@ seo:
   keywords: blog code, example shiki
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+これはテスト用の投稿です
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+```c
+#ifndef TLS_BACKEND_H
+#define TLS_BACKEND_H
+#include <stddef.h>
+#include <sys/types.h>
 
-```ts
-const a = 1;
-```
+typedef struct tls_ctx TLS_CTX;
+typedef struct tls TLS;
 
-```ts
-const b = 2;
-```
+TLS_CTX *tls_ctx_new_server(const char *cert_file, const char *keyfile);
+TLS_CTX *tls_ctx_new_client(void);
+void tls_ctx_free(TLS_CTX *ctx);
 
-```ts
-const c = 3;
+TLS *tls_new(TLS_CTX *ctx, int fd);
+int tls_accept(TLS *t);	 // server side handshake
+int tls_connect(TLS *t); // client side handshake
+ssize_t tls_read(TLS *t, void *buf, size_t len);
+ssize_t tls_write(TLS *t, const void *buf, size_t len);
+void tls_close(TLS *t);
+
+#endif
 ```
