@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test:e2e": "astro build && playwright test"
+    "test:e2e": "playwright install chromium && astro build && playwright test"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.4",

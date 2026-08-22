@@ -13,7 +13,7 @@ import { PORT } from '../playwright.config';
 export default function globalSetup() {
   // `astro preview` exits 0 and quietly reuses an already-running server, and
   // `astro preview stop` would then kill a server this run did not start.
-  // Refuse to touch it instead.
+  // Refuse to run instead.
   const status = execFileSync('npx', ['astro', 'preview', 'status'], {
     encoding: 'utf8',
   });
@@ -23,7 +23,20 @@ export default function globalSetup() {
     );
   }
 
-  execFileSync('npx', ['astro', 'preview', '--background', '--port', String(PORT)], {
-    stdio: 'inherit',
-  });
+  const started = execFileSync(
+    'npx',
+    ['astro', 'preview', '--background', '--port', String(PORT)],
+    { encoding: 'utf8' },
+  );
+  process.stdout.write(started);
+
+  // Astro forwards to `vite preview` without `strictPort`, so a taken port is
+  // silently incremented. `astro dev` also defaults to 4321, so without this
+  // check a contributor with the dev server running would have the whole suite
+  // pass against the dev server instead of the built output.
+  if (!started.includes(`localhost:${PORT}`)) {
+    throw new Error(
+      `The preview server did not bind port ${PORT}; something else is using it.\n${started}`,
+    );
+  }
 }

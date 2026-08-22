@@ -14,15 +14,26 @@ function failOnPageErrors(page: Page) {
     if (message.type() === 'error') problems.push(`console: ${message.text()}`);
   });
   page.on('pageerror', (error) => problems.push(`uncaught: ${error.message}`));
-  page.on('requestfailed', (request) =>
-    problems.push(`request failed: ${request.url()}`),
-  );
+  page.on('requestfailed', (request) => {
+    // Chromium reports requests cancelled by a navigation as failures. Clicking
+    // through to a post aborts whatever that page still had in flight, which
+    // would otherwise fail the test on a perfectly healthy site — and this suite
+    // gates deployment.
+    const error = request.failure()?.errorText ?? '';
+    if (error.includes('ERR_ABORTED')) return;
+    problems.push(`request failed: ${request.url()} (${error})`);
+  });
   return problems;
 }
 
 async function expectNoProblems(page: Page, problems: string[]) {
-  // Let late console errors and failed requests land before judging.
-  await page.waitForLoadState('networkidle');
+  // Best effort, not a guarantee: console and pageerror events arrive over CDP
+  // asynchronously with no ordering promise, so this narrows the window in
+  // which a late error is missed rather than closing it. `networkidle` is not
+  // used — it is deprecated and never settles on a page holding a connection
+  // open, which would burn the timeout instead of reporting anything useful.
+  await page.waitForLoadState('load');
+  await page.waitForTimeout(250);
   expect(problems).toEqual([]);
 }
 
@@ -106,7 +117,9 @@ test('the post index lists posts with a reading time', async ({ page }) => {
   await page.goto('/writing');
 
   const posts = page.locator('a[href^="/writing/"]');
-  expect(await posts.count()).toBeGreaterThan(0);
+  // `toBeVisible` retries; a bare `count()` would report 0 with no retry the
+  // moment this list stops being server-rendered.
+  await expect(posts.first()).toBeVisible();
   // Produced by the remark plugin wired into `markdown.processor`.
   await expect(page.getByText(/\d+ min read/).first()).toBeVisible();
 
