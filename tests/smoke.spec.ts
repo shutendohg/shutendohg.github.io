@@ -1,8 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * Fails the test if the page logged an error or failed to load a resource.
- * A dependency upgrade that breaks hydration usually shows up here first.
+ * Collects page-level errors. A dependency upgrade that breaks hydration
+ * usually shows up here first.
+ *
+ * Call `expectNoProblems` rather than asserting on the array directly: these
+ * events arrive asynchronously, so a synchronous check can run before the very
+ * failure it is meant to catch has been delivered.
  */
 function failOnPageErrors(page: Page) {
   const problems: string[] = [];
@@ -16,6 +20,12 @@ function failOnPageErrors(page: Page) {
   return problems;
 }
 
+async function expectNoProblems(page: Page, problems: string[]) {
+  // Let late console errors and failed requests land before judging.
+  await page.waitForLoadState('networkidle');
+  expect(problems).toEqual([]);
+}
+
 test('home page renders its sections', async ({ page }) => {
   const problems = failOnPageErrors(page);
 
@@ -27,19 +37,43 @@ test('home page renders its sections', async ({ page }) => {
   await expect(page.getByText('Contact')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Astro' })).toBeVisible();
 
-  expect(problems).toEqual([]);
+  await expectNoProblems(page, problems);
 });
 
-test('the local Inter font is applied', async ({ page }) => {
+test('the local Inter faces are registered and applied', async ({ page }) => {
   await page.goto('/');
 
-  // The font pipeline resolves `--font-inter` to a real family name. If the
-  // fonts config regresses, the variable resolves to nothing and the body
-  // falls back to sans-serif alone.
-  const fontFamily = await page.evaluate(
-    () => getComputedStyle(document.body).fontFamily,
+  const fonts = await page.evaluate(async () => {
+    await document.fonts.ready;
+    return {
+      body: getComputedStyle(document.body).fontFamily,
+      // Astro rewrites each family to a hashed name and also registers
+      // generated fallback faces ("<family> fallback: Arial"); keep only the
+      // real ones.
+      faces: [...document.fonts]
+        .filter((face) => !face.family.includes('fallback'))
+        .map((face) => ({ family: face.family, weight: face.weight })),
+    };
+  });
+
+  // global.css only falls back to `--font-inter` where variable fonts are
+  // unsupported, so Chromium resolves the body to the variable family.
+  expect(fonts.body).toContain('InterVariable');
+  expect(fonts.faces.some((face) => face.family.startsWith('InterVariable'))).toBe(
+    true,
   );
-  expect(fontFamily).toContain('Inter');
+
+  // Every static weight declared in astro.config.mjs. Asserting these
+  // separately is what catches the static faces being dropped while the
+  // variable one still resolves.
+  const staticWeights = fonts.faces
+    .filter(
+      (face) =>
+        face.family.startsWith('Inter-') && !face.family.startsWith('InterVariable'),
+    )
+    .map((face) => face.weight)
+    .sort();
+  expect(staticWeights).toEqual(['400', '500', '600', '700', '800']);
 });
 
 test('the theme toggle hydrates and switches the theme', async ({ page }) => {
@@ -63,7 +97,7 @@ test('the theme toggle hydrates and switches the theme', async ({ page }) => {
     )
     .toBe(!wasDark);
 
-  expect(problems).toEqual([]);
+  await expectNoProblems(page, problems);
 });
 
 test('the post index lists posts with a reading time', async ({ page }) => {
@@ -76,7 +110,7 @@ test('the post index lists posts with a reading time', async ({ page }) => {
   // Produced by the remark plugin wired into `markdown.processor`.
   await expect(page.getByText(/\d+ min read/).first()).toBeVisible();
 
-  expect(problems).toEqual([]);
+  await expectNoProblems(page, problems);
 });
 
 test('a post renders its markdown and highlights code', async ({ page }) => {
@@ -93,5 +127,5 @@ test('a post renders its markdown and highlights code', async ({ page }) => {
   await expect(code).toBeVisible();
   await expect(code.locator('span[style*="color"]').first()).toBeVisible();
 
-  expect(problems).toEqual([]);
+  await expectNoProblems(page, problems);
 });
