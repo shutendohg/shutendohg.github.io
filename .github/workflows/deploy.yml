@@ -13,16 +13,28 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      # The site is built from the repository root, so no `path` input is needed.
-      # The package manager is detected from the lockfile (npm).
-      - uses: withastro/action@v4
+      - uses: actions/setup-node@v4
         with:
-          # Deliberate pin, not a fix for a broken default: withastro/action@v4
-          # already defaults to 22, but the default drifts (main is on 24). Pin to
-          # the floor declared in `engines` so CI keeps matching it.
+          # Keep in sync with `engines.node` and ci.yml.
           node-version: 22
+          cache: npm
+      # Deliberately not withastro/action: it installs with `npm install`, which
+      # is free to resolve newer versions than the lockfile pins. CI gates pull
+      # requests with `npm ci`, so the deploy has to install the same way or a
+      # green pull request would not mean main deploys.
+      - run: npm ci
+      - run: npm run build
+      # ci.yml only gates pull requests. A merge commit can differ from the
+      # branch that was tested, so run the smoke tests here too; a failure
+      # keeps the broken build from reaching Pages.
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
 
   deploy:
     needs: build
