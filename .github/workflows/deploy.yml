@@ -17,9 +17,9 @@ jobs:
       - uses: actions/checkout@v4
       # The site is built from the repository root, so no `path` input is needed.
       # The package manager is detected from the lockfile (npm).
-      - uses: withastro/action@v4
+      - uses: withastro/action@v6
         with:
-          # Deliberate pin, not a fix for a broken default: withastro/action@v4
+          # Deliberate pin, not a fix for a broken default: withastro/action@v6
           # already defaults to 22, but the default drifts (main is on 24). Pin to
           # the floor declared in `engines` so CI keeps matching it.
           node-version: 22
