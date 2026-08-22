@@ -13,6 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,6 +27,11 @@ jobs:
       # green pull request would not mean main deploys.
       - run: npm ci
       - run: npm run build
+      # ci.yml only gates pull requests. A merge commit can differ from the
+      # branch that was tested, so run the smoke tests here too; a failure
+      # keeps the broken build from reaching Pages.
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/
