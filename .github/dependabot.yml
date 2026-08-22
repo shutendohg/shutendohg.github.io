@@ -1,0 +1,19 @@
+# Keep dependencies patched automatically so security alerts do not pile up
+# between manual upgrades.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Minor and patch bumps land as a single PR; majors stay separate so they
+      # can be reviewed against the Astro upgrade guide.
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

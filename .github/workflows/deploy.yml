@@ -15,9 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # ルート直下をビルドするので path は指定しない
+      # The site is built from the repository root, so no `path` input is needed.
+      # The package manager is detected from the lockfile (npm).
       - uses: withastro/action@v4
-        # （lockfile から npm / pnpm / yarn / bun を自動判定）
+        with:
+          # Deliberate pin, not a fix for a broken default: withastro/action@v4
+          # already defaults to 22, but the default drifts (main is on 24). Pin to
+          # the floor declared in `engines` so CI keeps matching it.
+          node-version: 22
 
   deploy:
     needs: build
