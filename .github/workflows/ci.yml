@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # Keep in sync with `engines.node` and deploy.yml.
+          node-version: 22
+          cache: npm
+      # `npm ci` installs strictly from package-lock.json and fails if the
+      # lockfile and package.json disagree, which is what makes this a useful
+      # gate for Dependabot pull requests. It is also how deploy.yml installs.
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # `test:e2e` would rebuild; the build above already produced dist/.
+      - run: npx playwright test
+      # Reported for visibility, but not a merge blocker: a freshly published
+      # advisory with no released fix would otherwise wedge every pull request.
+      - run: npm audit
+        continue-on-error: true
