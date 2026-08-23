@@ -1,0 +1,86 @@
+---
+import { getEntry } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/Container.astro';
+// The same module /pgpkey.asc serves, so the block shown here and the file
+// people download cannot be different bytes.
+import rawKey from '@/assets/pgpkey.asc?raw';
+
+const entry = await getEntry('pages', 'pgpkey');
+const armoredKey = rawKey.trim();
+
+const FINGERPRINT = '5B4F 3135 0635 FF2C 1058  E081 8B91 4D28 0BDB 4520';
+const compactFingerprint = FINGERPRINT.replace(/\s/g, '');
+
+// The rest of the metadata below is written by hand: reading it out of the key
+// would mean parsing OpenPGP packets at build time. This at least fails the
+// build when the .asc is replaced by a different key — the keyserver export
+// carries the fingerprint in its Comment header — so the remaining fields are
+// never silently wrong about *which* key is published. When rotating the key,
+// update the User ID, algorithm and dates here too.
+if (!armoredKey.includes(FINGERPRINT)) {
+  throw new Error(
+    `src/assets/pgpkey.asc does not carry fingerprint ${FINGERPRINT}; update this page to match the key.`,
+  );
+}
+
+const KEY_URL = `https://keyoxide.org/${compactFingerprint}`;
+const KEYSERVER_URL = `https://keys.openpgp.org/search?q=${compactFingerprint}`;
+---
+
+<BaseLayout seo={entry?.data.seo}>
+  <Container as="section" class="py-6">
+    <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-semibold text-headings">PGP public key</h1>
+        <p class="text-muted-foreground">
+          For sending me encrypted mail, or checking a signature of mine.
+        </p>
+      </div>
+
+      <p class="text-muted-foreground">
+        A key published on the same site that claims it proves nothing on its
+        own: anyone who can change this page can change the key. Confirm the
+        fingerprint through a second, independent channel before trusting it —
+        the{' '}<a class="text-headings font-medium underline" href={KEYSERVER_URL}>keyserver</a>{' '}and
+        my{' '}<a class="text-headings font-medium underline" href={KEY_URL}>Keyoxide profile</a>{' '}are
+        two of them.
+      </p>
+
+      <dl class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground">Fingerprint</dt>
+          <dd class="font-mono text-sm text-headings break-all">{FINGERPRINT}</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground">User ID</dt>
+          <dd class="font-mono text-sm text-headings">
+            shutendohg &lt;shutendohg@gmail.com&gt;
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground">Algorithm</dt>
+          <dd class="font-mono text-sm text-headings">ed25519 (sign), cv25519 (encrypt)</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground">Created / expires</dt>
+          <dd class="font-mono text-sm text-headings">2026-02-26 / 2027-02-26</dd>
+        </div>
+      </dl>
+
+      <div class="flex flex-col gap-2">
+        <p class="text-muted-foreground">
+          Import it directly from{' '}<a
+            class="text-headings font-medium underline"
+            href="/pgpkey.asc">/pgpkey.asc</a
+          >:
+        </p>
+        <pre
+          class="overflow-x-auto rounded-md border border-border p-4 font-mono text-sm"><code>curl -sSL https://shutendohg.github.io/pgpkey.asc | gpg --import</code></pre>
+      </div>
+
+      <pre
+        class="overflow-x-auto rounded-md border border-border p-4 font-mono text-xs"><code>{armoredKey}</code></pre>
+    </div>
+  </Container>
+</BaseLayout>
