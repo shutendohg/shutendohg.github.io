@@ -27,7 +27,7 @@ export const DEFAULT_CONFIGURATION: DefaultConfigurationType = {
   baseUrl: astroConfig.site || 'https://shutendohg.github.io/',
   author: {
     avatar,
-    name: 'Horohira',
+    name: 'Yu Tajima',
     headline: 'Software Enginner',
     username: 'shutendohg',
     location: 'Kawasaki, Japan',

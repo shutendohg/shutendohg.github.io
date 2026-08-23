@@ -42,8 +42,8 @@ test('home page renders its sections', async ({ page }) => {
 
   await page.goto('/');
 
-  await expect(page).toHaveTitle(/Horohira/);
-  await expect(page.getByRole('img', { name: 'Horohira' })).toBeVisible();
+  await expect(page).toHaveTitle(/Yu Tajima/);
+  await expect(page.getByRole('img', { name: 'Yu Tajima' })).toBeVisible();
   await expect(page.getByText('About')).toBeVisible();
   await expect(page.getByText('Contact')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Astro' })).toBeVisible();
