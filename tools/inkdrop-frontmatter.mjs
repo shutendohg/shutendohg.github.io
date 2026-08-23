@@ -30,6 +30,43 @@ function collectText(node) {
   return (node.children ?? []).map(collectText).join('');
 }
 
+/** A slug we are willing to put in a URL: lowercase ASCII words and hyphens. */
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Resolve the filename and URL slug for a note.
+ *
+ * Slugs stay English even though titles do not have to be. `toKebabCase` only
+ * keeps ASCII words, so it is unusable for Japanese titles — it returns
+ * undefined for 日本語のタイトル and "3" for 転職先に入社して3か月たった, which
+ * would put every such post at undefined.md and have them overwrite each other.
+ *
+ * So a non-ASCII title has to declare `slug:` itself. Rather than invent a URL,
+ * this returns a reason and the caller skips the note.
+ *
+ * @returns {{slug: string} | {slug: null, reason: string}}
+ */
+export function slugFor({ note, frontmatter }) {
+  const declared = frontmatter?.slug;
+  if (declared !== undefined && declared !== null && declared !== '') {
+    return SLUG_PATTERN.test(String(declared))
+      ? { slug: String(declared) }
+      : {
+          slug: null,
+          reason: `slug "${declared}" is not a lowercase ASCII slug (a-z, 0-9 and hyphens)`,
+        };
+  }
+
+  const title = note.title ?? '';
+  const kebab = /^[\x20-\x7E]+$/.test(title) ? toKebabCase(title) : undefined;
+  if (kebab && SLUG_PATTERN.test(kebab)) return { slug: kebab };
+
+  return {
+    slug: null,
+    reason: 'no English slug could be derived from the title; add `slug:` to the note',
+  };
+}
+
 /**
  * Rewrite an Inkdrop note's frontmatter in place so it satisfies the `posts`
  * collection schema in src/content.config.ts.
@@ -55,6 +92,7 @@ export function applyPostSchema({ note, frontmatter, mdast }) {
     description,
   };
 
-  if (!frontmatter.slug) frontmatter.slug = toKebabCase(note.title);
+  const { slug } = slugFor({ note, frontmatter });
+  if (slug) frontmatter.slug = slug;
   return frontmatter;
 }

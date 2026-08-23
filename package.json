@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "test:e2e": "playwright install chromium && astro build && playwright test",
-    "live-import": "node --env-file=.env tools/import.mjs",
+    "live-import": "node --env-file-if-exists=.env tools/import.mjs",
     "test:unit": "node --test tools/*.test.mjs"
   },
   "dependencies": {
@@ -34,6 +34,6 @@
   "devDependencies": {
     "@inkdropapp/live-export": "^0.2.1",
     "@playwright/test": "^1.62.1",
-    "js-yaml": "^5.3.0"
+    "js-yaml": "^4.3.1"
   }
 }

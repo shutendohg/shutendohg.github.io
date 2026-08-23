@@ -3,9 +3,10 @@ import test from 'node:test';
 
 import { dump } from 'js-yaml';
 
-import { applyPostSchema, deriveDescription } from './inkdrop-frontmatter.mjs';
+import { applyPostSchema, deriveDescription, slugFor } from './inkdrop-frontmatter.mjs';
 
 const note = (over = {}) => ({
+  _id: 'note:C-v_rj9R',
   title: 'Hello World',
   createdAt: Date.UTC(2026, 7, 23, 5, 0, 0),
   ...over,
@@ -84,4 +85,57 @@ test('the slug falls back to a kebab-cased title', () => {
     applyPostSchema({ note: note(), frontmatter: { slug: 'kept' }, mdast: mdast() }).slug,
     'kept',
   );
+});
+
+test('a Japanese title without a declared slug is refused, not guessed', () => {
+  // toKebabCase returns undefined here, which would write every such post to
+  // undefined.md and have them overwrite each other.
+  const { slug, reason } = slugFor({ note: note({ title: '日本語のタイトル' }), frontmatter: {} });
+
+  assert.equal(slug, null);
+  assert.match(reason, /slug:/);
+});
+
+test('a Japanese title containing digits does not become just the digits', () => {
+  // toKebabCase('転職先に入社して3か月たった') is '3'.
+  const { slug } = slugFor({
+    note: note({ title: '転職先に入社して3か月たった' }),
+    frontmatter: {},
+  });
+
+  assert.equal(slug, null);
+});
+
+test('a Japanese title publishes once it declares an English slug', () => {
+  const { slug } = slugFor({
+    note: note({ title: '耐量子計算機暗号に対応したBoringSSLをお試しする' }),
+    frontmatter: { slug: 'post-quantum-boringssl' },
+  });
+
+  assert.equal(slug, 'post-quantum-boringssl');
+});
+
+test('a declared slug that is not an English slug is refused', () => {
+  for (const bad of ['日本語', 'Bad_Slug', 'has spaces', '-leading', 'trailing-']) {
+    const { slug, reason } = slugFor({ note: note(), frontmatter: { slug: bad } });
+    assert.equal(slug, null, bad);
+    assert.match(reason, /lowercase ASCII/);
+  }
+});
+
+test('an ASCII title still produces a readable slug', () => {
+  assert.equal(
+    slugFor({ note: note({ title: 'Diary May in 2022' }), frontmatter: {} }).slug,
+    'diary-may-in-2022',
+  );
+});
+
+test('applyPostSchema leaves slug unset when none can be resolved', () => {
+  const frontmatter = applyPostSchema({
+    note: note({ title: '日本語のタイトル' }),
+    frontmatter: {},
+    mdast: mdast(),
+  });
+
+  assert.equal(frontmatter.slug, undefined);
 });
