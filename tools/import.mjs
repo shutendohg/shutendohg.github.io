@@ -51,7 +51,7 @@ const liveExport = new LiveExporter({
   port: Number(INKDROP_PORT),
 });
 
-await liveExport.start({
+const exportParams = {
   live: true,
   bookId: INKDROP_BOOKID,
   preProcessNote: ({ note, frontmatter, mdast }) =>
@@ -88,6 +88,43 @@ await liveExport.start({
       url: `/posts/${filename}`,
     };
   },
+};
+
+/**
+ * The library's watch loop calls clearInterval on any error — including a
+ * transient `fetch failed` when Inkdrop is briefly unreachable — and never
+ * recovers. Nothing else holds the event loop open, so the process exits and
+ * notes silently stop being exported while you keep writing.
+ *
+ * `beforeExit` fires when the loop empties, which is exactly that situation.
+ * Scheduling the retry from there keeps the process alive.
+ */
+const FIRST_RETRY_MS = 1_000;
+const MAX_RETRY_MS = 30_000;
+let retryDelay = FIRST_RETRY_MS;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function watch() {
+  await liveExport.start({ live: true, ...exportParams });
+  console.log('Watching Inkdrop for changes. Press Ctrl+C to stop.');
+  retryDelay = FIRST_RETRY_MS;
+}
+
+process.on('beforeExit', async () => {
+  console.warn(`Lost the connection to Inkdrop. Reconnecting in ${retryDelay / 1000}s.`);
+  await sleep(retryDelay);
+  retryDelay = Math.min(retryDelay * 2, MAX_RETRY_MS);
+  try {
+    await watch();
+  } catch (error) {
+    console.warn(`Reconnect failed: ${error.message}`);
+  }
 });
 
-console.log('Watching Inkdrop for changes. Press Ctrl+C to stop.');
+try {
+  await watch();
+} catch (error) {
+  console.error(`Could not reach Inkdrop: ${error.message}`);
+  console.error('Is the local server enabled in Preferences -> Server?');
+}
