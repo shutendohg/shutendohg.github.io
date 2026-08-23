@@ -1,20 +1,31 @@
 ---
-import { readFileSync } from 'node:fs';
-
 import { getEntry } from 'astro:content';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Container from '@/components/Container.astro';
+// The same module /pgpkey.asc serves, so the block shown here and the file
+// people download cannot be different bytes.
+import rawKey from '@/assets/pgpkey.asc?raw';
 
 const entry = await getEntry('pages', 'pgpkey');
-
-// Read the same file that is served at /pgpkey.asc, so the block shown here
-// and the one people download can never drift apart.
-const armoredKey = readFileSync('public/pgpkey.asc', 'utf8').trim();
+const armoredKey = rawKey.trim();
 
 const FINGERPRINT = '5B4F 3135 0635 FF2C 1058  E081 8B91 4D28 0BDB 4520';
-const KEY_URL = 'https://keyoxide.org/5B4F31350635FF2C1058E0818B914D280BDB4520';
-const KEYSERVER_URL =
-  'https://keys.openpgp.org/search?q=5B4F31350635FF2C1058E0818B914D280BDB4520';
+const compactFingerprint = FINGERPRINT.replace(/\s/g, '');
+
+// The rest of the metadata below is written by hand: reading it out of the key
+// would mean parsing OpenPGP packets at build time. This at least fails the
+// build when the .asc is replaced by a different key — the keyserver export
+// carries the fingerprint in its Comment header — so the remaining fields are
+// never silently wrong about *which* key is published. When rotating the key,
+// update the User ID, algorithm and dates here too.
+if (!armoredKey.includes(FINGERPRINT)) {
+  throw new Error(
+    `src/assets/pgpkey.asc does not carry fingerprint ${FINGERPRINT}; update this page to match the key.`,
+  );
+}
+
+const KEY_URL = `https://keyoxide.org/${compactFingerprint}`;
+const KEYSERVER_URL = `https://keys.openpgp.org/search?q=${compactFingerprint}`;
 ---
 
 <BaseLayout seo={entry?.data.seo}>
