@@ -61,6 +61,7 @@ Here is a list of documentation for more in depth information about the cvfolio.
 | Project Structure             | [docs/project-structure](/docs/project-structure.md)                                |
 | Customization                 | [docs/customization](/docs/customization.md)                                        |
 | How to deploy on GitHub Pages | [docs/guides/how-to-deploy-github-pages](docs/guides/how-to-deploy-github-pages.md) |
+| Publishing posts from Inkdrop | [docs/guides/publishing-from-inkdrop](docs/guides/publishing-from-inkdrop.md)       |
 
 Feel free to add more documentation.
 

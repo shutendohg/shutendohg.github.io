@@ -27,7 +27,9 @@ All commands are run from the root of the project, from a terminal:
 | `npm run dev`             | Starts local dev server at `localhost:4321`      |
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run test:unit`       | Run the Inkdrop export unit tests                |
 | `npm run test:e2e`        | Build, then run the Playwright smoke tests       |
+| `npm run live-import`     | Live-export Inkdrop notes into `src/content/posts` |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 

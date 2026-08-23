@@ -26,6 +26,9 @@ jobs:
       # lockfile and package.json disagree, which is what makes this a useful
       # gate for Dependabot pull requests. It is also how deploy.yml installs.
       - run: npm ci
+      # Unit tests for the Inkdrop export transform. They need no browser, so
+      # run them before the slower build and smoke tests.
+      - run: npm run test:unit
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       # `test:e2e` would rebuild; the build above already produced dist/.
