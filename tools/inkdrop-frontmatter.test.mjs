@@ -139,3 +139,38 @@ test('applyPostSchema leaves slug unset when none can be resolved', () => {
 
   assert.equal(frontmatter.slug, undefined);
 });
+
+test('a note with no lead paragraph falls back to the title for its description', () => {
+  const frontmatter = applyPostSchema({
+    note: note({ title: 'Only A List' }),
+    frontmatter: {},
+    mdast: mdast({
+      type: 'list',
+      children: [{ type: 'listItem', children: [paragraph('an item')] }],
+    }),
+  });
+
+  // An empty string passes z.string(), so this would otherwise publish with an
+  // empty meta description instead of failing loudly.
+  assert.equal(frontmatter.seo.description, 'Only A List');
+});
+
+test('an image-only lead paragraph also falls back to the title', () => {
+  const frontmatter = applyPostSchema({
+    note: note({ title: 'Screenshot Post' }),
+    frontmatter: {},
+    mdast: mdast({
+      type: 'paragraph',
+      children: [{ type: 'image', url: 'x.png', alt: 'shot' }],
+    }),
+  });
+
+  assert.equal(frontmatter.seo.description, 'Screenshot Post');
+});
+
+test('Japanese prose is hard-cut at the limit, since it has no word boundaries', () => {
+  const description = deriveDescription(mdast(paragraph('あ'.repeat(300))));
+
+  assert.equal(description.length, 161);
+  assert.ok(description.endsWith('…'));
+});

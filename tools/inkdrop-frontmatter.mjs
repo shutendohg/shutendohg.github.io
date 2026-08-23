@@ -18,7 +18,8 @@ export function deriveDescription(mdast) {
 
   const text = collectText(paragraph).replace(/\s+/g, ' ').trim();
   if (text.length <= DESCRIPTION_LIMIT) return text;
-  // Cut on a word boundary so the description does not end mid-word.
+  // Cut on a word boundary where there is one. Japanese prose has no spaces,
+  // so it is hard-cut at the limit instead.
   const cut = text.slice(0, DESCRIPTION_LIMIT);
   const lastSpace = cut.lastIndexOf(' ');
   return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
@@ -83,8 +84,14 @@ export function applyPostSchema({ note, frontmatter, mdast }) {
   frontmatter.title = note.title;
   frontmatter.date = new Date(note.createdAt);
 
+  // Falls back to the title rather than publishing an empty meta description:
+  // a note can open with a list, a table or an image and have no lead
+  // paragraph to summarise.
   const description =
-    frontmatter.seo?.description ?? frontmatter.description ?? deriveDescription(mdast);
+    frontmatter.seo?.description ||
+    frontmatter.description ||
+    deriveDescription(mdast) ||
+    note.title;
 
   frontmatter.seo = {
     ...frontmatter.seo,

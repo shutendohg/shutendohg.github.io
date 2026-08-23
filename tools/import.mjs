@@ -51,6 +51,11 @@ const liveExport = new LiveExporter({
   port: Number(INKDROP_PORT),
 });
 
+// Slug -> note id. Two notes whose titles kebab-case to the same slug would
+// otherwise take turns overwriting one file, and one of them would silently
+// never appear on the site.
+const claimedSlugs = new Map();
+
 const exportParams = {
   live: true,
   bookId: INKDROP_BOOKID,
@@ -66,6 +71,17 @@ const exportParams = {
       console.warn(`Skipping "${note.title}": ${reason}`);
       return false;
     }
+
+    const owner = claimedSlugs.get(slug);
+    if (owner && owner !== note._id) {
+      console.warn(
+        `Skipping "${note.title}": the slug "${slug}" is already used by ` +
+          `another note. Set a different \`slug:\` on one of them.`,
+      );
+      return false;
+    }
+    claimedSlugs.set(slug, note._id);
+
     return `${POSTS_PATH}/${slug}.md`;
   },
   urlForNote: ({ note, frontmatter }) => {
@@ -88,6 +104,16 @@ const exportParams = {
       url: `/posts/${filename}`,
     };
   },
+  postProcessNote: ({ md, frontmatter }) => {
+    // Links to notes that are not published keep their inkdrop:// URL, which
+    // would ship a dead link to every reader. Keep the text, drop the link.
+    return md.replace(/\[([^\]]*)\]\(inkdrop:\/\/[^)]*\)/g, (match, text) => {
+      console.warn(
+        `"${frontmatter.title}" links to an unpublished note; kept the text, dropped the link.`,
+      );
+      return text;
+    });
+  },
 };
 
 /**
@@ -102,16 +128,22 @@ const exportParams = {
 const FIRST_RETRY_MS = 1_000;
 const MAX_RETRY_MS = 30_000;
 let retryDelay = FIRST_RETRY_MS;
+// Only reconnect once a connection has worked. Retrying a startup failure
+// would loop forever on a wrong password or notebook id, which is a
+// misconfiguration to report, not a blip to wait out.
+let connected = false;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function watch() {
   await liveExport.start({ live: true, ...exportParams });
-  console.log('Watching Inkdrop for changes. Press Ctrl+C to stop.');
+  connected = true;
   retryDelay = FIRST_RETRY_MS;
+  console.log('Watching Inkdrop for changes. Press Ctrl+C to stop.');
 }
 
 process.on('beforeExit', async () => {
+  if (!connected) return;
   console.warn(`Lost the connection to Inkdrop. Reconnecting in ${retryDelay / 1000}s.`);
   await sleep(retryDelay);
   retryDelay = Math.min(retryDelay * 2, MAX_RETRY_MS);
@@ -126,5 +158,7 @@ try {
   await watch();
 } catch (error) {
   console.error(`Could not reach Inkdrop: ${error.message}`);
-  console.error('Is the local server enabled in Preferences -> Server?');
+  console.error('Check the credentials and notebook id, and that the local');
+  console.error('server is enabled in Preferences -> Server.');
+  process.exitCode = 1;
 }
