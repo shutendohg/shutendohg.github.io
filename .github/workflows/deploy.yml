@@ -32,7 +32,7 @@ jobs:
       # keeps the broken build from reaching Pages.
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist/
 
