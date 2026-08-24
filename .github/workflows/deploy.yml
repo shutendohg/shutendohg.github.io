@@ -10,6 +10,15 @@ permissions:
   pages: write
   id-token: write
 
+# Pages allows one deployment at a time. Merging several pull requests in quick
+# succession otherwise starts overlapping runs and every one but the first fails
+# with "due to in progress deployment". Queue them instead: the running deploy is
+# left to finish, superseded pending runs are dropped, and the last deployment to
+# land is the one built from the newest commit.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
