@@ -1,0 +1,56 @@
+==================================================================
+https://keybase.io/shutendohg
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://shutendohg.github.io
+  * I am shutendohg (https://keybase.io/shutendohg) on keybase.
+  * I have a public key ASDH5g_sZYFRrrCbqUNj-aN4oozPMTiZLT8iNBo4qxJvWgo
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "0120c7e60fec658151aeb09ba94363f9a378a28ccf3138992d3f22341a38ab126f5a0a",
+      "host": "keybase.io",
+      "kid": "0120c7e60fec658151aeb09ba94363f9a378a28ccf3138992d3f22341a38ab126f5a0a",
+      "uid": "21ef52742d618227923725bcabe92619",
+      "username": "shutendohg"
+    },
+    "merkle_root": {
+      "ctime": 1788705483,
+      "hash": "8ce3b12191dd0453f1a7636832cf030b483053ef4f76d6abcc6d409ae6495c058e8ab1b44f0a24b8eba0d2624cb77b852a8e99b58c9473d100b9ede4071e388c",
+      "hash_meta": "38c831d3ccfda0492e9d7bff8ff5aad25e3fa560b041f65fcce8fd01ce1a003e",
+      "seqno": 27760486
+    },
+    "service": {
+      "entropy": "+c59nyZPkF357IcZlQGPFpAI",
+      "hostname": "shutendohg.github.io",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 2
+  },
+  "client": {
+    "name": "keybase.io go client",
+    "version": "6.6.3"
+  },
+  "ctime": 1788705569,
+  "expire_in": 504576000,
+  "prev": "db2a8da49281c867076cec59e2e6bb442b16759c21006acaed02feeea12d4fb8",
+  "seqno": 11,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+hKRib2R5hqhkZXRhY2hlZMOpaGFzaF90eXBlCqNrZXnEIwEgx+YP7GWBUa6wm6lDY/mjeKKMzzE4mS0/IjQaOKsSb1oKp3BheWxvYWTESpcCC8Qg2yqNpJKByGcHbOxZ4ua7RCsWdZwhAGrK7QL+7qEtT7jEID9oatQ3Q515MkSifFl3+gBbyvkXda4qWY/iEJ0NnWwMAgHCo3NpZ8RAQxILe+s/rBVtEocf6XVYGbvvq3p7C35HVO1QJO1ZSGwSLl957CkmB60F1Jbu2esK0fEfyefsVSwof5Ts9BUlAahzaWdfdHlwZSCkaGFzaIKkdHlwZQildmFsdWXEIEYCNFfGpa5POD0waHpeLg8j4y5pNf32ggosFVpnswB0o3RhZ80CAqd2ZXJzaW9uAQ==
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/shutendohg
+
+==================================================================
