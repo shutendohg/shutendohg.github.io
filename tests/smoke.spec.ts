@@ -142,3 +142,27 @@ test('a post renders its markdown and highlights code', async ({ page }) => {
 
   await expectNoProblems(page, problems);
 });
+
+test('the Keybase ownership proof is served', async ({ request }) => {
+  // Keybase fetches this file to verify we control the site. It lives in
+  // `public/` and nothing in the build references it, so this test is the only
+  // thing standing between a stray cleanup and a silently broken proof.
+  const response = await request.get('/keybase.txt');
+
+  expect(response.status()).toBe(200);
+  const proof = await response.text();
+  expect(proof).toContain('I am an admin of https://shutendohg.github.io');
+  expect(proof).toContain('I am shutendohg (https://keybase.io/shutendohg) on keybase.');
+});
+
+test('the contact list links to the Keybase profile', async ({ page }) => {
+  const problems = failOnPageErrors(page);
+
+  await page.goto('/');
+
+  await expect(
+    page.locator('a[href="https://keybase.io/shutendohg"]'),
+  ).toBeVisible();
+
+  await expectNoProblems(page, problems);
+});
