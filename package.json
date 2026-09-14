@@ -12,19 +12,19 @@
     "test:unit": "node --test tools/*.test.mjs"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.3.0",
-    "@astrojs/mdx": "^8.0.0",
+    "@astrojs/markdown-remark": "^7.3.1",
+    "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.5",
     "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "astro": "^7.3.1",
-    "lucide-react": "^1.40.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "astro": "^7.3.2",
+    "lucide-react": "^1.44.0",
     "mdast-util-to-string": "^4.0.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "reading-time": "^1.5.0",
     "tailwindcss": "^4.3.3"
   },
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@inkdropapp/live-export": "^0.2.2",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "js-yaml": "^5.4.1"
   }
 }
